@@ -24,6 +24,7 @@ window.addEventListener('load', (ev) => {
     let dateSelector = document.getElementById('date-selector');
     let strikeSelector = document.getElementById('strike-selector');
     let priceContainer = document.getElementById('price-container');
+    let tradeContainer = document.getElementById('trade-container');
 
     let subscribing = false;
 
@@ -38,10 +39,8 @@ window.addEventListener('load', (ev) => {
         subscribing = false;
         dateSelector.innerHTML = '';
         strikeSelector.innerHTML = '';
-        priceContainer.children[0].innerHTML = '-';
-        priceContainer.children[1].innerHTML = '-';
-        priceContainer.children[2].innerHTML = '-';
-        priceContainer.children[3].innerHTML = '-';
+        for (let i = 0; i < 4; ++i) priceContainer.children[i].innerHTML = '-';
+        for (let i = 0; i < 6; ++i) tradeContainer.children[i].innerHTML = '-';
 
         fetch(`/dates?stock-code=${codeSelector.value}`).then((resp) => resp.json()).then((dates) => {
             if (dates.length) {
@@ -64,10 +63,8 @@ window.addEventListener('load', (ev) => {
     let updateStrike = (ev) => {
         subscribing = false;
         strikeSelector.innerHTML = '';
-        priceContainer.children[0].innerHTML = '-';
-        priceContainer.children[1].innerHTML = '-';
-        priceContainer.children[2].innerHTML = '-';
-        priceContainer.children[3].innerHTML = '-';
+        for (let i = 0; i < 4; ++i) priceContainer.children[i].innerHTML = '-';
+        for (let i = 0; i < 6; ++i) tradeContainer.children[i].innerHTML = '-';
 
         fetch(`/strikes?stock-code=${codeSelector.value}&expr-date=${dateSelector.value}&option-type=${typeSelector.value}`).then((resp) => resp.json()).then((strikes) => {
             if (strikes.length) {
@@ -76,7 +73,6 @@ window.addEventListener('load', (ev) => {
 
                 for (let strike of strikes) {
                     hasCode = hasCode || code == strike.code;
-                    console.log(strike.code, code);
                     strikeSelector.innerHTML += `<option value="${strike.code}">${strike.price}</option>`;
                 }
 
@@ -91,7 +87,6 @@ window.addEventListener('load', (ev) => {
                 alert('无行权价数据');
             }
         }).catch((err) => {
-            console.log(err);
             alert('获取行权价失败');
         });
     };
@@ -111,6 +106,7 @@ window.addEventListener('load', (ev) => {
     typeSelector.addEventListener('change', updateDate);
     dateSelector.addEventListener('change', updateStrike);
     strikeSelector.addEventListener('change', updateAll);
+    for (let i = 0; i < 4; ++i) priceContainer.children[i].addEventListener('animationend', (ev) => {priceContainer.children[i].style.animation = '';});
 
     codeSelector.value = getStorageItem('cur-stock-code', undefined, codeSelector.value);
 
@@ -120,16 +116,39 @@ window.addEventListener('load', (ev) => {
         if (subscribing == false) {
             setTimeout(updatePrice, 100);
         } else {
-            fetch('/price').then((resp) => resp.json()).then((resp) => {
+            fetch(`/price?option-code=${strikeSelector.value}`).then((resp) => resp.json()).then((resp) => {
                 if (resp['code'] != undefined) {
+                    let datas = [resp['Bid'][0][1], resp['Bid'][0][0].toFixed(2).toString(), resp['Ask'][0][0].toFixed(2).toString(), resp['Ask'][0][1]];
 
-                    priceContainer.children[0].innerHTML = `${resp['Bid'][0][1]}`;
-                    priceContainer.children[1].innerHTML = `${resp['Bid'][0][0]}`;
-                    priceContainer.children[2].innerHTML = `${resp['Ask'][0][0]}`;
-                    priceContainer.children[3].innerHTML = `${resp['Ask'][0][1]}`;
+                    for (let i = 0; i < 4; ++i) {
+                        if (priceContainer.children[i].innerHTML != `${datas[i]}`) {
+                            priceContainer.children[i].innerHTML = `${datas[i]}`;
+                            priceContainer.children[i].style.animation = 'shine 0.2s ease-out';
+                        }
+                    }
+
+                    let buyPrice = resp['Bid'][0][0];
+                    let sellPrice = resp['Ask'][0][0];
+
+                    tradeContainer.children[0].innerHTML = (buyPrice - 0.05).toFixed(2).toString();
+                    tradeContainer.children[1].innerHTML = buyPrice.toFixed(2).toString();
+                    tradeContainer.children[4].innerHTML = sellPrice.toFixed(2).toString();
+                    tradeContainer.children[5].innerHTML = (sellPrice + 0.05).toFixed(2).toString();
+
+                    let midPrice = ((buyPrice + sellPrice) / 2) * 1000;
+
+                    console.log(midPrice);
+
+                    if (parseInt(midPrice) % 50 == 0) {
+                        tradeContainer.children[2].innerHTML = (midPrice / 1000).toFixed(2).toString();
+                        tradeContainer.children[3].innerHTML = (midPrice / 1000).toFixed(2).toString();
+                    } else {
+                        tradeContainer.children[2].innerHTML = (Math.floor(midPrice / 50) * 50 / 1000).toFixed(2).toString();
+                        tradeContainer.children[1].innerHTML = (Math.ceil(midPrice / 50) * 50 / 1000).toFixed(2).toString();
+                    }
                 }
 
-                updatePrice();
+                setTimeout(updatePrice, 1);
             });
         }
     };
