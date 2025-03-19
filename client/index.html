@@ -10,13 +10,17 @@
 
         <style>
             .my-container {
-                width: 20rem;
+                width: 32rem;
                 margin-top: 10rem;
             }
 
             span {
                 width: 6rem;
                 display: inline-block !important;
+            }
+
+            option {
+                text-align: center;
             }
         </style>
     </head>
@@ -26,16 +30,17 @@
             <div class="input-group mb-3">
                 <span class="input-group-text">code</span>
                 <select class="form-select" id="code-selector">
-                    <option value="TSLA" selected>TSLA</option>
-                    <option value="NVDA">NVDA</option>
-                    <option value="AAPL">AAPL</option>
+                    <option value="US.TSLA">TSLA</option>
+                    <option value="US.NVDA">NVDA</option>
+                    <option value="US.AAPL">AAPL</option>
+                    <option value="HK.00700">TCH</option>
                 </select>
             </div>
 
             <div class="input-group mb-3">
                 <span class="input-group-text">type</span>
                 <select class="form-select" id="type-selector">
-                    <option value="call" selected>call</option>
+                    <option value="call">call</option>
                     <option value="put">put</option>
                 </select>
             </div>
@@ -50,6 +55,17 @@
                 <span class="input-group-text">strike</span>
                 <select class="form-select" id="strike-selector">
                 </select>
+            </div>
+
+            <div class="input-group mb-3" id="price-container">
+                <span class="input-group-text" style="width: 7.6725rem; background-color: var(--bs-red); color: var(--bs-white);"></span>
+                <span class="input-group-text" style="width: 7.6725rem; background-color: var(--bs-red); color: var(--bs-white);"></span>
+                <span class="input-group-text" style="width: 7.6725rem; background-color: var(--bs-green); color: var(--bs-white);"></span>
+                <span class="input-group-text" style="width: 7.6725rem; background-color: var(--bs-green); color: var(--bs-white);"></span>
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text" style="width: 100%;">amount</span>
             </div>
         </div>
     </body>
